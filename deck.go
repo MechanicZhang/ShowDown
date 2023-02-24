@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type Deck struct {
 	cards []Card
 }
@@ -13,9 +15,9 @@ func NewDeck() *Deck {
 }
 
 func (d *Deck) Shuffle() {
-
+	fmt.Println("Shuffling the deck...")
 }
 
-func (d *Deck) DrawCard() {
-
+func (d *Deck) DrawCard() Card {
+	return Card{Suit: 0, Rank: 0}
 }
