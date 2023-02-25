@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type Human struct {
 	name  string
 	point int
@@ -19,16 +21,33 @@ func (h *Human) GetName() string {
 }
 
 func (h *Human) TakeTurn() Turn {
-	turn := Turn{player: h, card: h.hand.cards[0]}
+	fmt.Printf("   ")
+	for _, card := range h.GetHandCards() {
+		fmt.Printf(" %v", card)
+	}
+	fmt.Println()
+	var index int
+	fmt.Scanf("%d", &index)
+	for index < 1 || index > h.hand.Size() {
+		size := h.hand.Size()
+		fmt.Printf("輸入錯誤！您目前有 %v 張牌，請輸入介於 1 ~ %v 的正整數: ", size, size)
+		fmt.Scanf("%d", &index)
+	}
+	card := h.hand.ShowCard(index - 1)
+	turn := Turn{player: h, card: card}
 	return turn
+}
+
+func (h *Human) GetHandCards() []Card {
+	return h.hand.GetCards()
 }
 
 func (h *Human) AddHandCard(c Card) {
 	h.hand.AddCard(c)
 }
 
-func (h *Human) ShowCard(c Card) {
-	panic("not implemented") // TODO: Implement
+func (h *Human) ShowCard(index int) Card {
+	return h.hand.ShowCard(index)
 }
 
 func (h *Human) GainPoint() {

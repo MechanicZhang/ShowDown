@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+)
 
 type Deck struct {
 	cards []Card
@@ -15,9 +18,14 @@ func NewDeck() *Deck {
 }
 
 func (d *Deck) Shuffle() {
-	fmt.Println("Shuffling the deck...")
+	fmt.Println("即將開始新局，洗牌中...")
+	rand.Shuffle(len(d.cards), func(i, j int) {
+		d.cards[i], d.cards[j] = d.cards[j], d.cards[i]
+	})
 }
 
 func (d *Deck) DrawCard() Card {
-	return Card{Suit: 0, Rank: 0}
+	top := d.cards[0]
+	d.cards = d.cards[1:]
+	return top
 }

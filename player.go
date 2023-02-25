@@ -5,7 +5,7 @@ type Player interface {
 	GetName() string
 	TakeTurn() Turn
 	AddHandCard(c Card)
-	ShowCard(c Card)
+	ShowCard(index int) Card
 	GainPoint()
 	GetPoint() int
 	MakeExchangeHandsDecision()
