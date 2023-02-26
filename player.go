@@ -3,7 +3,7 @@ package main
 type Player interface {
 	SetName(name string)
 	GetName() string
-	TakeTurn() Turn
+	TakeTurn() Action
 	AddHandCard(c Card)
 	ShowCard(index int) Card
 	GainPoint()

@@ -5,25 +5,14 @@ import "fmt"
 type ShowDown struct {
 	deck    *Deck
 	players []Player
-}
-
-type Turn struct {
-	player Player
-	card   Card
-}
-
-func (t *Turn) GetPlayer() string {
-	return t.player.GetName()
-}
-
-func (t *Turn) GetCard() Card {
-	return t.card
+	actions []Action
 }
 
 func NewShowDown(deck *Deck, players []Player) *ShowDown {
 	return &ShowDown{
 		deck:    deck,
 		players: players,
+		actions: make([]Action, len(players)),
 	}
 }
 
@@ -68,22 +57,21 @@ func (sd *ShowDown) playing() {
 	for i := 0; i < 13; i++ {
 		fmt.Println("---------------------------------")
 		fmt.Printf("開始第 %v 回合\n", i+1)
-		turns := make([]Turn, len(sd.players))
 		for j := 0; j < len(sd.players); j++ {
-			fmt.Printf("玩家 %s 的回合, 您要出第幾張牌呢？\n", sd.players[j].GetName())
-			turn := sd.players[j].TakeTurn()
-			turns[j] = turn
+			fmt.Printf("輪到玩家 %s 的回合, 您要採取什麼行動呢？\n", sd.players[j].GetName())
+			action := sd.players[j].TakeTurn()
+			sd.actions[j] = action
 		}
 
-		for j := 0; j < len(turns); j++ {
-			fmt.Printf("玩家 %v 出了 %v\n", turns[j].GetPlayer(), turns[j].GetCard())
+		for j := 0; j < len(sd.actions); j++ {
+			fmt.Printf("玩家 %v 出了 %v\n", sd.actions[j].GetPlayer(), sd.actions[j].GetCard())
 		}
 
 		// compare turns
-		winTurn := turns[0]
-		for j := 1; j < len(turns); j++ {
-			if turns[j].GetCard().ShowDown(winTurn.GetCard()) > 0 {
-				winTurn = turns[j]
+		winTurn := sd.actions[0]
+		for j := 1; j < len(sd.actions); j++ {
+			if sd.actions[j].GetCard().ShowDown(winTurn.GetCard()) > 0 {
+				winTurn = sd.actions[j]
 			}
 		}
 

@@ -20,7 +20,7 @@ func (h *Human) GetName() string {
 	return h.name
 }
 
-func (h *Human) TakeTurn() Turn {
+func (h *Human) TakeTurn() Action {
 	fmt.Printf("   ")
 	for _, card := range h.GetHandCards() {
 		fmt.Printf(" %v", card)
@@ -34,7 +34,7 @@ func (h *Human) TakeTurn() Turn {
 		fmt.Scanf("%d", &index)
 	}
 	card := h.hand.ShowCard(index - 1)
-	turn := Turn{player: h, card: card}
+	turn := Action{player: h, card: card}
 	return turn
 }
 

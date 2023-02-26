@@ -24,11 +24,11 @@ func (ai *AI) GetName() string {
 	return ai.name
 }
 
-func (ai *AI) TakeTurn() Turn {
-	fmt.Printf("輪到玩家 %s 的回合, 已自動出牌。\n", ai.name)
+func (ai *AI) TakeTurn() Action {
+	fmt.Println("選擇出牌, 已自動出牌。")
 	randIndex := rand.Intn(ai.HandSize()) + 1
 	card := ai.hand.ShowCard(randIndex - 1)
-	turn := Turn{player: ai, card: card}
+	turn := Action{player: ai, card: card}
 	time.Sleep(500 * time.Millisecond)
 	return turn
 }
