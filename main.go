@@ -10,13 +10,9 @@ func init() {
 }
 
 func main() {
-	game := NewShowDown(NewDeck(),
-		[]Player{
-			NewHumanPlayer(),
-			NewAIPlayer(),
-			NewHumanPlayer(),
-			NewAIPlayer(),
-		},
-	)
+	players := []IPlayer{
+		NewHumanPlayer(), NewAIPlayer(), NewAIPlayer(), NewAIPlayer(),
+	}
+	game := NewShowDown(NewDeck(), players)
 	game.Start()
 }

@@ -3,56 +3,41 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"time"
 )
 
 type AI struct {
-	name  string
-	point int
-	hand  *Hand
+	*PlayerBase
 }
 
 func NewAIPlayer() *AI {
-	return &AI{hand: NewHand()}
-}
-
-func (ai *AI) SetName(name string) {
-	ai.name = name
-}
-
-func (ai *AI) GetName() string {
-	return ai.name
+	return &AI{&PlayerBase{hand: NewHand()}}
 }
 
 func (ai *AI) TakeTurn() Action {
-	fmt.Println("選擇出牌, 已自動出牌。")
-	randIndex := rand.Intn(ai.HandSize()) + 1
-	card := ai.hand.ShowCard(randIndex - 1)
-	turn := Action{player: ai, card: card}
-	time.Sleep(500 * time.Millisecond)
-	return turn
+	fmt.Printf("輪到玩家 %s 的回合, 您要採取什麼行動呢？\n", ai.GetName())
+	action := Action{player: ai, exchangeHands: ai.MakeExchangeHandsDecision(), card: ai.ShowCard()}
+	if eh := action.GetExchangeHands(); eh != nil {
+		ai.SetExchangeHands(eh)
+	}
+	return action
 }
 
-func (ai *AI) AddHandCard(c Card) {
-	ai.hand.AddCard(c)
+func (ai *AI) ShowCard() Card {
+	fmt.Printf("玩家: %v 已自動出牌\n", ai.GetName())
+	return ai.hand.ShowCard(rand.Intn(ai.HandSize()))
 }
 
-func (ai *AI) ShowCard(index int) Card {
-	return ai.hand.ShowCard(index)
-}
+func (ai *AI) MakeExchangeHandsDecision() *ExchangeHands {
+	if ai.hasUsedExchangeHandsDecision {
+		return nil
+	}
+	if rand.Intn(2) == 1 {
+		ai.hasUsedExchangeHandsDecision = true
+		players := filterPlayers(ai.showdown.players, func(p IPlayer) bool {
+			return ai.GetName() != p.GetName()
+		})
+		return NewExchangeHands(ai, players[rand.Intn(len(players))])
+	}
 
-func (ai *AI) GainPoint() {
-	ai.point++
-}
-
-func (ai *AI) GetPoint() int {
-	return ai.point
-}
-
-func (ai *AI) MakeExchangeHandsDecision() {
-	panic("not implemented") // TODO: Implement
-}
-
-func (ai *AI) HandSize() int {
-	return ai.hand.Size()
+	return nil
 }

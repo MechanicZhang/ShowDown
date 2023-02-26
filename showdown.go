@@ -4,16 +4,20 @@ import "fmt"
 
 type ShowDown struct {
 	deck    *Deck
-	players []Player
+	players []IPlayer
 	actions []Action
 }
 
-func NewShowDown(deck *Deck, players []Player) *ShowDown {
-	return &ShowDown{
+func NewShowDown(deck *Deck, players []IPlayer) *ShowDown {
+	showdown := &ShowDown{
 		deck:    deck,
 		players: players,
-		actions: make([]Action, len(players)),
+		actions: make([]Action, 0),
 	}
+	for _, player := range players {
+		player.SetShowDown(showdown)
+	}
+	return showdown
 }
 
 func (sd *ShowDown) Start() {
@@ -27,9 +31,10 @@ func (sd *ShowDown) Start() {
 
 func (sd *ShowDown) naming() {
 	for i := 0; i < len(sd.players); i++ {
-		fmt.Printf("請輸入第 %v 位玩家名稱: ", i+1)
-		var name string
-		fmt.Scanln(&name)
+		name, err := promptPlayerName(fmt.Sprintf(TypePlayerNamePromt, i+1))
+		if err != nil {
+			panic(err)
+		}
 		sd.players[i].SetName(name)
 	}
 }
@@ -58,28 +63,50 @@ func (sd *ShowDown) playing() {
 		fmt.Println("---------------------------------")
 		fmt.Printf("開始第 %v 回合\n", i+1)
 		for j := 0; j < len(sd.players); j++ {
-			fmt.Printf("輪到玩家 %s 的回合, 您要採取什麼行動呢？\n", sd.players[j].GetName())
-			action := sd.players[j].TakeTurn()
-			sd.actions[j] = action
+			sd.actions = append(sd.actions, sd.players[j].TakeTurn())
 		}
+		sd.showdown()
+		sd.countdown()
+		sd.clearActions()
+	}
+}
 
-		for j := 0; j < len(sd.actions); j++ {
-			fmt.Printf("玩家 %v 出了 %v\n", sd.actions[j].GetPlayer(), sd.actions[j].GetCard())
+func (sd *ShowDown) showdown() {
+	printRoundResult(sd.actions)
+	winTurn := sd.actions[0]
+	for j := 1; j < len(sd.actions); j++ {
+		if sd.actions[j].GetCard().ShowDown(winTurn.GetCard()) > 0 {
+			winTurn = sd.actions[j]
 		}
+	}
 
-		// compare turns
-		winTurn := sd.actions[0]
-		for j := 1; j < len(sd.actions); j++ {
-			if sd.actions[j].GetCard().ShowDown(winTurn.GetCard()) > 0 {
-				winTurn = sd.actions[j]
+	fmt.Printf("%v 最大，玩家 %v 獲勝。\n\n", winTurn.GetCard(), winTurn.GetPlayer())
+	winTurn.player.GainPoint()
+}
+
+func printRoundResult(actions []Action) {
+	fmt.Println()
+	fmt.Println("本回合的結果:")
+	fmt.Printf("     ")
+	for i := 0; i < len(actions); i++ {
+		fmt.Printf(" %v", actions[i].GetCard())
+	}
+	fmt.Println()
+}
+
+func (sd *ShowDown) countdown() {
+	for i := 0; i < len(sd.players); i++ {
+		if eh := sd.players[i].GetExchangeHands(); eh != nil {
+			eh.countdown()
+			if eh.GetCount() > 0 {
+				fmt.Printf("玩家 %v 的交換特權剩餘 %v 回合。\n", sd.players[i].GetName(), eh.GetCount())
 			}
 		}
-
-		fmt.Printf("本回合最大的牌為 %v，玩家 %v 獲勝。\n\n", winTurn.GetCard(), winTurn.GetPlayer())
-		// give point
-		winTurn.player.GainPoint()
-		// show card
 	}
+}
+
+func (sd *ShowDown) clearActions() {
+	sd.actions = sd.actions[:0]
 }
 
 func (sd *ShowDown) gameover() {

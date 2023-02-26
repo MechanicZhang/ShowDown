@@ -16,6 +16,10 @@ func (h *Hand) GetCards() []Card {
 	return h.cards
 }
 
+func (h *Hand) SetCards(cards []Card) {
+	h.cards = cards
+} 
+
 func (h *Hand) ShowCard(index int) Card{
 	card := h.cards[index]
 	h.cards = append(h.cards[:index], h.cards[index+1:]...)

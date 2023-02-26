@@ -3,65 +3,52 @@ package main
 import "fmt"
 
 type Human struct {
-	name  string
-	point int
-	hand  *Hand
+	*PlayerBase
 }
 
 func NewHumanPlayer() *Human {
-	return &Human{hand: NewHand()}
-}
-
-func (h *Human) SetName(name string) {
-	h.name = name
-}
-
-func (h *Human) GetName() string {
-	return h.name
+	return &Human{&PlayerBase{hand: NewHand()}}
 }
 
 func (h *Human) TakeTurn() Action {
-	fmt.Printf("   ")
-	for _, card := range h.GetHandCards() {
-		fmt.Printf(" %v", card)
+	fmt.Printf("輪到玩家 %s 的回合, 您要採取什麼行動呢？\n", h.GetName())
+	action := Action{player: h, exchangeHands: h.MakeExchangeHandsDecision(), card: h.ShowCard()}
+	if eh := action.GetExchangeHands(); eh != nil {
+		fmt.Printf("玩家: %v 已使用「交換手牌」特權，與玩家: %v 交換手牌\n", h.GetName(), action.GetExchangeHands().GetExchangee().GetName())
+		h.SetExchangeHands(eh)
 	}
-	fmt.Println()
-	var index int
-	fmt.Scanf("%d", &index)
-	for index < 1 || index > h.hand.Size() {
-		size := h.hand.Size()
-		fmt.Printf("輸入錯誤！您目前有 %v 張牌，請輸入介於 1 ~ %v 的正整數: ", size, size)
-		fmt.Scanf("%d", &index)
+	return action
+}
+
+func (h *Human) ShowCard() Card {
+	index, err := promptCardIndex(h.GetHand())
+	if err != nil {
+		panic(err)
 	}
-	card := h.hand.ShowCard(index - 1)
-	turn := Action{player: h, card: card}
-	return turn
+
+	return h.hand.ShowCard(index - 1)
 }
 
-func (h *Human) GetHandCards() []Card {
-	return h.hand.GetCards()
-}
+func (h *Human) MakeExchangeHandsDecision() *ExchangeHands {
+	if h.hasUsedExchangeHandsDecision {
+		return nil
+	}
+	shouldExchange, err := promptYesNo(ExchangeHandsPrompt)
+	if err != nil {
+		panic(err)
+	}
+	if shouldExchange {
+		h.hasUsedExchangeHandsDecision = true
+		players := filterPlayers(h.showdown.players, func(p IPlayer) bool {
+			return h.GetName() != p.GetName()
+		})
 
-func (h *Human) AddHandCard(c Card) {
-	h.hand.AddCard(c)
-}
+		targetIndex, err := promptPlayerIndex(players)
+		if err != nil {
+			panic(err)
+		}
+		return NewExchangeHands(h, players[targetIndex-1])
+	}
 
-func (h *Human) ShowCard(index int) Card {
-	return h.hand.ShowCard(index)
-}
-
-func (h *Human) GainPoint() {
-	h.point++
-}
-
-func (h *Human) GetPoint() int {
-	return h.point
-}
-
-func (h *Human) MakeExchangeHandsDecision() {
-	panic("not implemented") // TODO: Implement
-}
-
-func (h *Human) HandSize() int {
-	return h.hand.Size()
+	return nil
 }
