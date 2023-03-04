@@ -3,7 +3,7 @@ package main
 type IPlayer interface {
 	// common methods
 	GetName() string
-	SetName(name string)
+	NameSelf(name string)
 	SetShowDown(showdown *ShowDown)
 	GetPoint() int
 	GainPoint()
@@ -15,7 +15,6 @@ type IPlayer interface {
 	SetExchangeHands(eh *ExchangeHands)
 
 	// abstract methods
-	TakeTurn() Action
 	ShowCard() Card
 	MakeExchangeHandsDecision() *ExchangeHands
 }
@@ -34,7 +33,7 @@ func (pb *PlayerBase) GetName() string {
 	return pb.name
 }
 
-func (pb *PlayerBase) SetName(name string) {
+func (pb *PlayerBase) NameSelf(name string) {
 	pb.name = name
 }
 

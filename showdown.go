@@ -21,21 +21,21 @@ func NewShowDown(deck *Deck, players []IPlayer) *ShowDown {
 }
 
 func (sd *ShowDown) Start() {
-	sd.naming()
+	sd.namePlayers()
 	sd.greeting()
 	sd.deck.Shuffle()
-	sd.drawing()
+	sd.drawHands()
 	sd.playing()
 	sd.gameover()
 }
 
-func (sd *ShowDown) naming() {
+func (sd *ShowDown) namePlayers() {
 	for i := 0; i < len(sd.players); i++ {
 		name, err := promptPlayerName(fmt.Sprintf(TypePlayerNamePromt, i+1))
 		if err != nil {
 			panic(err)
 		}
-		sd.players[i].SetName(name)
+		sd.players[i].NameSelf(name)
 	}
 }
 
@@ -49,7 +49,7 @@ func (sd *ShowDown) greeting() {
 	fmt.Printf("\n\n")
 }
 
-func (sd *ShowDown) drawing() {
+func (sd *ShowDown) drawHands() {
 	fmt.Println("所有玩家抽牌中...")
 	for i := 0; i < 13; i++ {
 		for j := 0; j < len(sd.players); j++ {
@@ -63,12 +63,22 @@ func (sd *ShowDown) playing() {
 		fmt.Println("---------------------------------")
 		fmt.Printf("開始第 %v 回合\n", i+1)
 		for j := 0; j < len(sd.players); j++ {
-			sd.actions = append(sd.actions, sd.players[j].TakeTurn())
+			sd.actions = append(sd.actions, takeTurn(sd.players[j]))
+
 		}
 		sd.showdown()
 		sd.countdown()
 		sd.clearActions()
 	}
+}
+
+func takeTurn(p IPlayer) Action {
+	fmt.Printf("輪到玩家 %s 的回合, 您要採取什麼行動呢？\n", p.GetName())
+	action := Action{player: p, exchangeHands: p.MakeExchangeHandsDecision(), card: p.ShowCard()}
+	if eh := action.GetExchangeHands(); eh != nil {
+		p.SetExchangeHands(eh)
+	}
+	return action
 }
 
 func (sd *ShowDown) showdown() {

@@ -13,15 +13,6 @@ func NewAIPlayer() *AI {
 	return &AI{&PlayerBase{hand: NewHand()}}
 }
 
-func (ai *AI) TakeTurn() Action {
-	fmt.Printf("輪到玩家 %s 的回合, 您要採取什麼行動呢？\n", ai.GetName())
-	action := Action{player: ai, exchangeHands: ai.MakeExchangeHandsDecision(), card: ai.ShowCard()}
-	if eh := action.GetExchangeHands(); eh != nil {
-		ai.SetExchangeHands(eh)
-	}
-	return action
-}
-
 func (ai *AI) ShowCard() Card {
 	fmt.Printf("玩家: %v 已自動出牌\n", ai.GetName())
 	return ai.hand.ShowCard(rand.Intn(ai.HandSize()))
